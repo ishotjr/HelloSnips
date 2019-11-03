@@ -1,9 +1,12 @@
+var matrix = require('@matrix-io/matrix-lite');
 var mqtt = require('mqtt');
 
 var hostname = "mqtt://localhost"; //"mqtt://raspberrypi.local";
 var client  = mqtt.connect(hostname);
 
 console.log("[Snips Log] begin");
+
+console.log("This device has " + matrix.led.length + ' LEDs');
 
 client.on('connect', function () {
     console.log("[Snips Log] Connected to MQTT broker " + hostname);
@@ -29,19 +32,33 @@ function onIntentDetected(intent) {
 
     // TODO: check it's for sure `ComputeSum`!!
 
-    firstTerm = intent.slots[0].value.value;
-    secondTerm = intent.slots[1].value.value;
+    if ((typeof intent.slots[0] === 'undefined') || (typeof intent.slots[1] === 'undefined')) {
+        matrix.led.set("red");
+    } else {
+        firstTerm = intent.slots[0].value.value;
+        secondTerm = intent.slots[1].value.value;
 
-    console.log("[Snips Log] firstTerm: " + firstTerm);
-    console.log("[Snips Log] secondTerm: " + secondTerm);
-    console.log("[Snips Log] sum: " + (firstTerm + secondTerm));
+        console.log("[Snips Log] firstTerm: " + firstTerm);
+        console.log("[Snips Log] secondTerm: " + secondTerm);
+        sum = firstTerm + secondTerm;
+        console.log("[Snips Log] sum: " + sum);
 
+        if (sum > matrix.led.length) {
+            sum = matrix.led.length;
+        }
+        everloop = new Array(sum).fill({b:100});
+        matrix.led.set(everloop);
+    }
 }
 
 function onHotwordDetected() {
     console.log("[Snips Log] Hotword detected");
+    matrix.led.set("teal");
 }
 
 function onListeningStateChanged(listening) {
     console.log("[Snips Log] " + (listening ? "Start" : "Stop") + " listening");
+    if (listening) {
+        matrix.led.set("green");
+    }
 }
