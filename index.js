@@ -34,6 +34,11 @@ function onIntentDetected(intent) {
 
     if ((typeof intent.slots[0] === 'undefined') || (typeof intent.slots[1] === 'undefined')) {
         matrix.led.set("red");
+
+        client.publish('hermes/dialogueManager/endSession', JSON.stringify({
+            sessionId: intent.sessionId,
+            text: "I'm afraid I didn't catch that?"
+        }));
     } else {
         firstTerm = intent.slots[0].value.value;
         secondTerm = intent.slots[1].value.value;
@@ -42,6 +47,11 @@ function onIntentDetected(intent) {
         console.log("[Snips Log] secondTerm: " + secondTerm);
         sum = firstTerm + secondTerm;
         console.log("[Snips Log] sum: " + sum);
+
+        client.publish('hermes/dialogueManager/endSession', JSON.stringify({
+            sessionId: intent.sessionId,
+            text: firstTerm + " plus " + secondTerm + " is " + sum
+        }));
 
         if (sum > matrix.led.length) {
             sum = matrix.led.length;
